@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { NextPage, GetServerSideProps } from "next"
 
 interface CatCategory {
     id: number
@@ -22,8 +23,12 @@ const fetchCatImage = async (): Promise<SearchCatImage> => {
     return result[0]
 }
 
-const IndexPage = (): JSX.Element => {
-    const [catImageUrl, setCatImageUrl] = useState("https://cdn2.thecatapi.com/images/bpc.jpg")
+interface IndexPageProps {
+    initialCatImageUrl: string
+}
+
+const IndexPage: NextPage<IndexPageProps> = ({ initialCatImageUrl }) => {
+    const [catImageUrl, setCatImageUrl] = useState(initialCatImageUrl)
     const handleClick = async (): Promise<void> => {
         const image = await fetchCatImage()
         setCatImageUrl(image.url)
@@ -33,10 +38,19 @@ const IndexPage = (): JSX.Element => {
         <div>
             <button onClick={handleClick}>🐱 Fetch New Cat Image 🐱</button>
             <div style={{ marginTop : 8 }}>
-                <img src={catImageUrl} />
+                <img src={catImageUrl} width={500} height="auto" />
             </div>
         </div>
     )
+}
+
+export const getServerSideProps: GetServerSideProps<IndexPageProps> = async () => {
+    const catImage = await fetchCatImage()
+    return {
+        props: {
+            initialCatImageUrl: catImage.url,
+        }
+    }
 }
 
 export default IndexPage
